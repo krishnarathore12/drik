@@ -1,0 +1,42 @@
+{
+  "summary": {
+    "passed": 0,
+    "total": 1,
+    "ok": false,
+    "exit_code": 1
+  },
+  "tests": [
+    {
+      "name": "Recommend a solution after flight feedback",
+      "status": "fail",
+      "steps": [
+        {
+          "verb": "goto",
+          "description": "http://localhost:5173/",
+          "raw_line": "- goto http://localhost:5173/",
+          "line_number": 4,
+          "status": "pass",
+          "duration_s": 0.5412915409979178,
+          "detail": "navigated to http://localhost:5173/",
+          "model_answer": "",
+          "coords": null,
+          "screenshot": "drik-artifacts/recommend-a-solution-after-flight-feedback_01_goto.png",
+          "attempts": 1
+        },
+        {
+          "verb": "wait",
+          "description": "for the weak flights to finish loading",
+          "raw_line": "- wait for the weak flights to finish loading",
+          "line_number": 5,
+          "status": "error",
+          "duration_s": 0.184654959000909,
+          "detail": "could not reach model server at http://localhost:1234/v1/chat/completions: Server disconnected without sending a response.",
+          "model_answer": "",
+          "coords": null,
+          "screenshot": "drik-artifacts/recommend-a-solution-after-flight-feedback_02_wait.png",
+          "attempts": 1
+        }
+      ]
+    }
+  ]
+}

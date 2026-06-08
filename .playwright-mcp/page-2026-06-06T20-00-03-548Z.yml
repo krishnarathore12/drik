@@ -1,0 +1,80 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic:
+      - generic:
+        - generic:
+          - img "Air India"
+          - generic: Weak Flight Monitor
+        - button "Pin sidebar open":
+          - img
+      - navigation "Primary":
+        - link "Weak Flights":
+          - /url: /
+        - link "On Vector":
+          - /url: /on-vector
+        - link "Strategic Insights":
+          - /url: /strategic-insights
+        - link "Adaptive Recommendation":
+          - /url: /recommendation-lab
+        - link "Feedback Analytics":
+          - /url: /feedbacks
+    - generic:
+      - button "Prefetch snapshot":
+        - generic: Prefetch snapshot
+      - link "Download feedback":
+        - /url: /api/admin/download-feedback
+        - generic: Download feedback
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - heading "Weak Flights" [level=1] [ref=e8]
+      - paragraph [ref=e9]: Change sector, snapshot, or travel window and click Apply to re-run against Databricks.
+    - generic [ref=e31]: No flights match these constraints.
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - button "Sector BOM-DEL" [active] [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: Sector
+          - generic [ref=e15]: BOM-DEL
+          - generic [ref=e16]: ▴
+        - generic [ref=e37]:
+          - button "↔ DEL-BOM" [ref=e38] [cursor=pointer]
+          - listbox "Sector" [ref=e39]:
+            - generic [ref=e40]:
+              - generic [ref=e41]: Domestic
+              - generic [ref=e42]:
+                - option "DEL-BOM" [ref=e43] [cursor=pointer]
+                - option "BOM-DEL" [selected] [ref=e44] [cursor=pointer]
+                - option "DEL-IXZ" [ref=e45] [cursor=pointer]
+                - option "IXZ-DEL" [ref=e46] [cursor=pointer]
+            - generic [ref=e47]:
+              - generic [ref=e48]: LHI
+              - generic [ref=e49]:
+                - option "DEL-JFK" [ref=e50] [cursor=pointer]
+                - option "JFK-DEL" [ref=e51] [cursor=pointer]
+                - option "DEL-LHR" [ref=e52] [cursor=pointer]
+                - option "LHR-DEL" [ref=e53] [cursor=pointer]
+                - option "DEL-FRA" [ref=e54] [cursor=pointer]
+                - option "FRA-DEL" [ref=e55] [cursor=pointer]
+            - generic [ref=e56]:
+              - generic [ref=e57]: SHI
+              - generic [ref=e58]:
+                - option "BOM-SIN" [ref=e59] [cursor=pointer]
+                - option "SIN-BOM" [ref=e60] [cursor=pointer]
+                - option "DEL-RUH" [ref=e61] [cursor=pointer]
+                - option "RUH-DEL" [ref=e62] [cursor=pointer]
+            - generic [ref=e63]:
+              - generic [ref=e64]: MHI
+              - generic [ref=e65]:
+                - option "DEL-MEL" [ref=e66] [cursor=pointer]
+                - option "MEL-DEL" [ref=e67] [cursor=pointer]
+                - option "BOM-HND" [ref=e68] [cursor=pointer]
+                - option "HND-BOM" [ref=e69] [cursor=pointer]
+      - button "Travel 25 May → 08 Jun" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: Travel
+        - generic [ref=e20]: 25 May → 08 Jun
+        - generic [ref=e21]: ▾
+      - button "Snapshot 24 May" [ref=e23] [cursor=pointer]:
+        - generic [ref=e24]: Snapshot
+        - generic [ref=e25]: 24 May
+        - generic [ref=e26]: ▾
+      - button "Up to date" [disabled] [ref=e27]
+    - generic [ref=e32]: No flights match these constraints. Try a different snapshot date or travel range.

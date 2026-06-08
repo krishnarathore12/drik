@@ -1,0 +1,61 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic:
+      - generic:
+        - generic:
+          - img "Air India"
+          - generic: Weak Flight Monitor
+        - button "Pin sidebar open":
+          - img
+      - navigation "Primary":
+        - link "Weak Flights":
+          - /url: /
+        - link "On Vector":
+          - /url: /on-vector
+        - link "Strategic Insights":
+          - /url: /strategic-insights
+        - link "Adaptive Recommendation":
+          - /url: /recommendation-lab
+        - link "Feedback Analytics":
+          - /url: /feedbacks
+    - generic:
+      - button "Prefetch snapshot":
+        - generic: Prefetch snapshot
+      - link "Download feedback":
+        - /url: /api/admin/download-feedback
+        - generic: Download feedback
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - heading "Weak Flights" [level=1] [ref=e8]
+      - paragraph [ref=e9]: Change sector, snapshot, or travel window and click Apply to re-run against Databricks.
+    - generic [ref=e10]:
+      - generic:
+        - generic: Total
+        - generic: —
+      - generic:
+        - generic: Critical
+        - generic: —
+      - generic:
+        - generic: Weak
+        - generic: —
+      - generic:
+        - generic: Watch
+        - generic: —
+      - generic:
+        - generic: Good
+        - generic: —
+    - generic [ref=e11]:
+      - button "Sector BOM-DEL" [ref=e13] [cursor=pointer]:
+        - generic [ref=e14]: Sector
+        - generic [ref=e15]: BOM-DEL
+        - generic [ref=e16]: ▾
+      - button "Travel 25 May → 08 Jun" [ref=e18] [cursor=pointer]:
+        - generic [ref=e19]: Travel
+        - generic [ref=e20]: 25 May → 08 Jun
+        - generic [ref=e21]: ▾
+      - button "Snapshot 24 May" [ref=e23] [cursor=pointer]:
+        - generic [ref=e24]: Snapshot
+        - generic [ref=e25]: 24 May
+        - generic [ref=e26]: ▾
+      - button "Up to date" [disabled] [ref=e27]
+    - generic [ref=e30]: Loading flight classifications from Databricks - checking every 5s...

@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Drik runtime artifacts
+drik-artifacts/
+*.report.json
+report.json
+
+# mlx serving (local, large)
+.mlx-venv/
+holo-3.1-4b-mlx-4bit/
+
+# locally-saved model weights
+models/
