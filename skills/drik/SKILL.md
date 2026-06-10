@@ -7,6 +7,14 @@ description: >
   installing the drik CLI, authoring Markdown journey specs in drik/journeys/,
   running them with results saved to drik/results/<journey>/, and serving a
   localhost dashboard of the results with `drik serve`.
+license: MIT
+metadata:
+  version: 0.2.0
+  homepage: https://github.com/krishnarathore12/drik
+compatibility: >
+  Requires uv (or pipx) and Chromium via Playwright. Managed model serving
+  needs Apple Silicon; other platforms need an external OpenAI-compatible
+  vision model server (e.g. LM Studio).
 ---
 
 # Drik — vision-driven user-journey tests
