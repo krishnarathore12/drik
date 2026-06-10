@@ -9,6 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
+# secrets (PyPI token etc.) — never commit
+.env
+
 # Drik runtime artifacts
 drik-artifacts/
 *.report.json
