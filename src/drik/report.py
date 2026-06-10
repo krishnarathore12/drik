@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 
 PASS = "pass"
@@ -109,6 +110,7 @@ def write_json(run: RunResult, path: str | Path) -> None:
             "total": total,
             "ok": run.passed,
             "exit_code": run.exit_code,
+            "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         },
         "tests": [
             {

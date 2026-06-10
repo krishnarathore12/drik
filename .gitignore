@@ -13,6 +13,11 @@ wheels/
 drik-artifacts/
 *.report.json
 report.json
+drik/results/
+
+# agent/browser session files
+.playwright-mcp/
+.pytest_cache/
 
 # mlx serving (local, large)
 .mlx-venv/

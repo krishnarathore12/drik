@@ -10,12 +10,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import __version__
+from . import __version__, serving
 from .browser import Browser
 from .model import ModelClient
 from .parser import SpecError, Test, parse_file
 from .report import print_console, write_json
 from .runner import Runner, RunnerConfig
+from .serving import DEFAULT_REPO
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -24,6 +25,10 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "run":
         return _cmd_run(args)
+    if args.command == "serve":
+        return _cmd_serve(args)
+    if args.command == "model":
+        return _cmd_model(args)
 
     parser.print_help()
     return 2
@@ -43,8 +48,15 @@ def _build_parser() -> argparse.ArgumentParser:
                      help="root for relative paths (default: http://localhost:3000)")
     run.add_argument("--endpoint", default="http://localhost:1234/v1",
                      help="OpenAI-compatible model server URL (default: LM Studio)")
-    run.add_argument("--model", default="holo-3.1-4b",
-                     help="model name as the server exposes it")
+    run.add_argument("--model", default=None,
+                     help="model name as the server exposes it "
+                          "(default: first model the server reports)")
+    run.add_argument("--model-repo", default=None, metavar="HF_REPO",
+                     help="model to auto-serve when no server is running "
+                          f"(default: {DEFAULT_REPO})")
+    run.add_argument("--no-auto-model", action="store_true",
+                     help="fail instead of starting a model server when the "
+                          "endpoint is unreachable")
     run.add_argument("--coord-space", default="normalized_1000",
                      choices=["normalized_1000", "pixel"],
                      help="how to interpret the model's raw coordinates")
@@ -67,6 +79,36 @@ def _build_parser() -> argparse.ArgumentParser:
     run.add_argument("--timeout", type=float, default=30.0, metavar="SECONDS",
                      help="per-step model + browser timeout (default: 30)")
     run.add_argument("--no-color", action="store_true", help="disable colored output")
+
+    serve = sub.add_parser("serve", help="serve a localhost dashboard of journey results")
+    serve.add_argument("results", nargs="?", default="./drik/results",
+                       help="results directory, one subfolder per journey "
+                            "(default: ./drik/results)")
+    serve.add_argument("--host", default="127.0.0.1",
+                       help="address to bind (default: 127.0.0.1)")
+    serve.add_argument("--port", type=int, default=8123,
+                       help="port to listen on (default: 8123)")
+    serve.add_argument("--no-open", action="store_true",
+                       help="don't open the dashboard in a browser")
+
+    model = sub.add_parser(
+        "model", help="manage drik's own local vision-model server "
+                      "(Apple Silicon, via mlx-vlm)")
+    msub = model.add_subparsers(dest="model_command", required=True)
+
+    mstart = msub.add_parser("start", help="download (if needed) and start the model server")
+    mstart.add_argument("--repo", default=DEFAULT_REPO, metavar="HF_REPO",
+                        help=f"Hugging Face model repo (default: {DEFAULT_REPO})")
+    mstart.add_argument("--port", type=int, default=1234,
+                        help="port to serve on (default: 1234)")
+    mstart.add_argument("--wait", type=float, default=300.0, metavar="SECONDS",
+                        help="how long to wait for the server to come up (default: 300)")
+
+    mstop = msub.add_parser("stop", help="stop the managed model server")
+    mstop.add_argument("--port", type=int, default=1234)
+
+    mstatus = msub.add_parser("status", help="check whether a model server is answering")
+    mstatus.add_argument("--port", type=int, default=1234)
     return p
 
 
@@ -97,9 +139,21 @@ def _cmd_run(args) -> int:
         print("error: specs contained no '## test case' headings", file=sys.stderr)
         return 2
 
+    # Make sure a model server is answering — starting one ourselves if the
+    # endpoint is local, we're on Apple Silicon, and auto-start isn't disabled.
+    repo = args.model_repo or DEFAULT_REPO
+    if not serving.endpoint_alive(args.endpoint):
+        if args.no_auto_model:
+            print(f"error: no model server at {args.endpoint} "
+                  "(--no-auto-model given)", file=sys.stderr)
+            return 2
+        if not serving.ensure_running(args.endpoint, repo):
+            return 2
+    model_name = args.model or serving.first_model_id(args.endpoint) or repo
+
     model = ModelClient(
         endpoint=args.endpoint,
-        model=args.model,
+        model=model_name,
         coord_space=args.coord_space,
         timeout=args.timeout,
     )
@@ -135,6 +189,41 @@ def _cmd_run(args) -> int:
         print(f"\nreport written to {args.report}")
 
     return result.exit_code
+
+
+def _cmd_model(args) -> int:
+    endpoint = f"http://127.0.0.1:{args.port}/v1"
+    if args.model_command == "start":
+        if serving.endpoint_alive(endpoint):
+            print(f"a model server is already answering at {endpoint}")
+            return 0
+        if not serving.supported_platform():
+            print("error: 'drik model start' requires Apple Silicon (mlx-vlm); "
+                  "on other platforms run an OpenAI-compatible vision server "
+                  "such as LM Studio.", file=sys.stderr)
+            return 2
+        return 0 if serving.start_server(args.repo, args.port, wait_s=args.wait) else 1
+    if args.model_command == "stop":
+        return 0 if serving.stop_server(args.port) else 1
+    if args.model_command == "status":
+        if serving.endpoint_alive(endpoint):
+            model = serving.first_model_id(endpoint)
+            print(f"up at {endpoint}" + (f" (model: {model})" if model else ""))
+            return 0
+        print(f"down — nothing answering at {endpoint}")
+        return 1
+    return 2
+
+
+def _cmd_serve(args) -> int:
+    from .dashboard import serve
+
+    results_dir = Path(args.results)
+    if not results_dir.is_dir():
+        print(f"note: {results_dir} does not exist yet; the dashboard will be "
+              "empty until journeys are run", file=sys.stderr)
+    return serve(results_dir, host=args.host, port=args.port,
+                 open_browser=not args.no_open)
 
 
 def _collect_specs(path_str: str) -> list[Path] | None:

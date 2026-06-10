@@ -18,7 +18,14 @@ break selector-based tests.
 
 ## Install
 
-Drik uses [uv](https://docs.astral.sh/uv/) for package management.
+As a tool, from PyPI:
+
+```bash
+uv tool install drik                          # or: pipx install drik
+uvx --from drik playwright install chromium   # one-time browser download
+```
+
+Or for development, with [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync                              # install dependencies
@@ -27,19 +34,57 @@ uv run playwright install chromium   # one-time browser download
 
 ## Quick start
 
-1. Start a local OpenAI-compatible **vision** model server (see [Model serving](#model-serving)).
-2. Have your app running on localhost.
-3. Run a spec:
+1. Have your app running on localhost.
+2. Run a spec:
 
 ```bash
 uv run drik run specs/auth.md \
   --base-url http://localhost:3000 \
-  --endpoint http://localhost:1234/v1 \
-  --model holo-3.1-4b \
   --report report.json
 ```
 
+On Apple Silicon that's all: if no model server answers at `--endpoint`,
+drik starts one itself (see [Model serving](#model-serving)) — the first run
+downloads the model (~3 GB, one-time). `--model` is optional; drik asks the
+server which model it serves. On other platforms, start an external
+OpenAI-compatible **vision** server first.
+
 Exit code is `0` if every step in every test passed, `1` otherwise.
+
+### Journey layout + dashboard
+
+The recommended per-project layout keeps one spec per user journey and one
+results folder per journey:
+
+```
+drik/
+  journeys/          # one .md spec per user journey (committed)
+    login.md
+    checkout.md
+  results/           # written by runs (gitignore this)
+    login/
+      report.json
+      artifacts/*.png
+```
+
+Run a journey into its results folder:
+
+```bash
+uv run drik run drik/journeys/login.md \
+  --base-url http://localhost:3000 \
+  --report drik/results/login/report.json \
+  --artifacts drik/results/login/artifacts
+```
+
+Then browse all journeys in a localhost dashboard — index of journeys with
+pass/fail, per-journey pages with every step, failure detail, and screenshots:
+
+```bash
+uv run drik serve drik/results
+```
+
+The dashboard re-scans the results folder on every refresh, so leave it
+running while you iterate.
 
 Before running real flows, validate the model + coordinate space with the bundled
 calibration spec:
@@ -115,10 +160,31 @@ input text. Paths are resolved against `--base-url`.
 - verify not an error message is shown
 ```
 
+## Agent skill (Claude Code & friends)
+
+`skills/drik/SKILL.md` packages all of this as an [Agent Skill](https://agentskills.io)
+so a coding agent can install drik, write journey specs into `drik/journeys/`,
+run them into `drik/results/`, and serve the dashboard — on its own. Install it:
+
+```bash
+# Claude Code — available in every project
+mkdir -p ~/.claude/skills/drik
+curl -fsSL https://raw.githubusercontent.com/krishnarathore12/drik/main/skills/drik/SKILL.md \
+  -o ~/.claude/skills/drik/SKILL.md
+
+# or per-project
+mkdir -p .claude/skills/drik && cp <drik-checkout>/skills/drik/SKILL.md .claude/skills/drik/
+```
+
+Other agent CLIs that support the SKILL.md standard can point at the same file.
+Then ask the agent: *"use drik to test the checkout flow"* — it will scaffold
+the folders, author the spec, run it, and hand you the dashboard URL.
+
 ## CLI
 
 ```
 drik run <file-or-dir> [options]
+drik serve [results-dir] [options]
 ```
 
 | Flag | Default | Meaning |
@@ -135,10 +201,40 @@ drik run <file-or-dir> [options]
 | `--timeout SECONDS` | `30` | Per-step model + browser timeout |
 | `--no-color` | — | Disable colored console output |
 
+`drik serve` flags:
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `results` | `./drik/results` | Results directory, one subfolder per journey |
+| `--host` | `127.0.0.1` | Address to bind |
+| `--port` | `8123` | Port to listen on |
+| `--no-open` | — | Don't auto-open a browser tab |
+
 ## Model serving
 
-Drik does **not** host the model — it connects to an external OpenAI-compatible
-server over HTTP. The model must support **multimodal (image) input**.
+Drik talks to any OpenAI-compatible server over HTTP; the model must support
+**multimodal (image) input**.
+
+### Managed (Apple Silicon — zero config)
+
+On Apple Silicon, drik hosts the model itself. When `drik run` finds nothing
+at `--endpoint` (and the endpoint is localhost), it creates an mlx-vlm venv
+under `~/.drik/`, downloads `pipenetwork/Holo-3.1-4B-MLX-8bit` into the
+Hugging Face cache, applies the mlx-vlm Holo patch (gotcha #1 below), and
+starts the server. It stays up between runs so re-runs are instant. Manage it
+explicitly with:
+
+```bash
+drik model start [--repo HF_REPO] [--port 1234]   # download + serve (idempotent)
+drik model status                                  # up/down + loaded model
+drik model stop                                    # shut it down
+```
+
+Pass `--no-auto-model` to `drik run` to fail instead of auto-starting, and
+`--model-repo` to auto-serve a different model. Server logs:
+`~/.drik/mlx-server.log`.
+
+### External servers
 
 > Drik targets Apple Silicon. The Holo model card's `vllm` / SGLang / GPU-Docker
 > instructions are NVIDIA/CUDA only and **do not run on a Mac.**
@@ -190,6 +286,8 @@ src/drik/
   browser.py   # Playwright wrapper
   runner.py    # orchestration, retries, artifact capture
   report.py    # console + JSON output
+  dashboard.py # `drik serve` localhost results dashboard
+  serving.py   # managed mlx-vlm model server (`drik model`, run auto-start)
 ```
 
 ## License
