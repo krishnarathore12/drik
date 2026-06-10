@@ -162,21 +162,18 @@ input text. Paths are resolved against `--base-url`.
 
 ## Agent skill (Claude Code & friends)
 
-`skills/drik/SKILL.md` packages all of this as an [Agent Skill](https://agentskills.io)
+`skills/drik/SKILL.md` packages all of this as an [Agent Skill](https://www.skills.sh/krishnarathore12/drik/drik)
 so a coding agent can install drik, write journey specs into `drik/journeys/`,
-run them into `drik/results/`, and serve the dashboard — on its own. Install it:
+run them into `drik/results/`, and serve the dashboard — on its own. Install it
+for Claude Code, Codex, Zed, Amp, and any other SKILL.md-compatible agent:
 
 ```bash
-# Claude Code — available in every project
-mkdir -p ~/.claude/skills/drik
-curl -fsSL https://raw.githubusercontent.com/krishnarathore12/drik/main/skills/drik/SKILL.md \
-  -o ~/.claude/skills/drik/SKILL.md
-
-# or per-project
-mkdir -p .claude/skills/drik && cp <drik-checkout>/skills/drik/SKILL.md .claude/skills/drik/
+npx skills add krishnarathore12/drik
 ```
 
-Other agent CLIs that support the SKILL.md standard can point at the same file.
+(Or manually: copy `skills/drik/SKILL.md` into `~/.claude/skills/drik/` for
+Claude Code, or your agent's equivalent skills directory.)
+
 Then ask the agent: *"use drik to test the checkout flow"* — it will scaffold
 the folders, author the spec, run it, and hand you the dashboard URL.
 
